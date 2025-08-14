@@ -62,14 +62,7 @@ Step 1: Start a vllm serving of [Qwen-2.5-72B-Instruct](https://huggingface.co/Q
 huggingface-cli download --resume-download https://huggingface.co/Qwen/Qwen2.5-72B-Instruct --local-dir /path/to/your/local/filedir --local-dir-use-symlinks False
 
 # start vllm serving
-vllm serve /path/to/your/local/filedir \
-    --port 18901 \
-    --gpu-memory-utilization 0.8 \
-    --max-model-len 32768 \
-    --tensor-parallel-size 8 \ 
-    --served-model-name "judge" \
-    --trust-remote-code \
-    --disable-log-requests
+vllm serve /home/yuexi/projects/DeepEyes/models/Qwen2.5-72B-Instruct --port 18901 --gpu-memory-utilization 0.8 --max-model-len 32768 --tensor-parallel-size 4 --served-model-name "judge" --trust-remote-code --disable-log-requests
 ```
 
 Step 2: Build a ray cluster for all of the training nodes. Prepare data before starting training. Our training dataset can be downloaded from [huggingface](https://huggingface.co/datasets/ChenShawn/DeepEyes-Datasets-47k).
@@ -82,7 +75,7 @@ Step 3: Use one of the following scripts to start training.
 wandb login
 
 # the IP and port for your Qwen-2.5-72B-Instruct vllm serving
-export LLM_AS_A_JUDGE_BASE="http://your.vllm.machine.ip:18901/v1"
+export LLM_AS_A_JUDGE_BASE="http://0.0.0.0:18901/v1"
 
 # umber of training nodes
 export WORLD_SIZE=8

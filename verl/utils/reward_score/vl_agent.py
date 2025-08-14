@@ -1,30 +1,69 @@
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 import requests
 import random
 import re
 import os
 
 from math_verify import parse, verify
+from azure.identity import DefaultAzureCredential, AzureCliCredential, get_bearer_token_provider
 
-openai_api_key = "EMPTY"
-openai_api_base_list = [
-    # "http://172.30.52.123:8000/v1",
-    # "http://10.39.3.123:18901/v1",
-    os.environ.get("LLM_AS_A_JUDGE_BASE", "http://10.39.3.123:18901/v1"),
-]
+
+def get_openai_client(deployment="gpt-4o"):
+    endpoint = os.getenv(
+        "ENDPOINT_URL", "https://mcg-openai-swedencentral-b.openai.azure.com/"
+    )
+    # endpoint = os.getenv(
+    #     "ENDPOINT_URL", "https://mcg-openai-eastus2.openai.azure.com/"
+    # )
+
+    print("endpoint:", endpoint)
+    print("deployment:", deployment)
+
+    # token_provider = get_bearer_token_provider(
+    #     DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+    # )
+    token_provider = get_bearer_token_provider(
+        AzureCliCredential(), "https://cognitiveservices.azure.com/.default"
+    )
+    
+    if deployment.startswith("gpt-4o"):
+        api_version = "2024-08-01-preview"
+    elif deployment.startswith("gpt-5"):
+        api_version = "2024-12-01-preview"
+
+    client = AzureOpenAI(
+        azure_endpoint=endpoint,
+        azure_ad_token_provider=token_provider,
+        api_version=api_version,
+    )
+    return client, deployment
+
+
+# openai_api_key = "EMPTY"
+# openai_api_base_list = [
+#     # "http://172.30.52.123:8000/v1",
+#     # "http://10.39.3.123:18901/v1",
+#     os.environ.get("LLM_AS_A_JUDGE_BASE", "http://10.39.3.123:18901/v1"),
+# ]
+
+# client_list = []
+# for api_base in openai_api_base_list:
+#     client = OpenAI(
+#         api_key=openai_api_key,
+#         base_url=api_base,
+#     )
+#     client_list.append(client)
+# model_name_list = []
+# for client in client_list:
+#     response = requests.get(f"{api_base}/models")
+#     models = response.json()
+#     model_name_list.append(models['data'][0]['id'])
 
 client_list = []
-for api_base in openai_api_base_list:
-    client = OpenAI(
-        api_key=openai_api_key,
-        base_url=api_base,
-    )
-    client_list.append(client)
 model_name_list = []
-for client in client_list:
-    response = requests.get(f"{api_base}/models")
-    models = response.json()
-    model_name_list.append(models['data'][0]['id'])
+client, model_name = get_openai_client('gpt-40-mini')
+client_list.append(client)
+model_name_list.append(model_name)
 
 
 
