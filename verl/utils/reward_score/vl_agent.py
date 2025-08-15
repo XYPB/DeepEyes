@@ -8,7 +8,7 @@ from math_verify import parse, verify
 from azure.identity import DefaultAzureCredential, AzureCliCredential, get_bearer_token_provider
 
 
-def get_openai_client(deployment="gpt-4o"):
+def get_openai_client(deployment="gpt-4o-mini"):
     endpoint = os.getenv(
         "ENDPOINT_URL", "https://mcg-openai-swedencentral-b.openai.azure.com/"
     )
@@ -61,7 +61,7 @@ def get_openai_client(deployment="gpt-4o"):
 
 client_list = []
 model_name_list = []
-client, model_name = get_openai_client('gpt-40-mini')
+client, model_name = get_openai_client('gpt-4o-mini')
 client_list.append(client)
 model_name_list.append(model_name)
 
