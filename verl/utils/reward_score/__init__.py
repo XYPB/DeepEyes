@@ -65,6 +65,10 @@ def _default_compute_score(data_source, solution_str, ground_truth, extra_info=N
         from . import vl_agent
         res = vl_agent.compute_score(solution_str, ground_truth, extra_info)
 
+    elif data_source in ['VQA-RAD', 'OmniMedVQA', 'SLAKE']:
+        from . import vl_agent
+        res = vl_agent.compute_score(solution_str, ground_truth, extra_info)
+
     elif data_source in ['geoguessr']:
         from . import vl_agent
         res = vl_agent.compute_common_reasoning(solution_str, ground_truth, extra_info)

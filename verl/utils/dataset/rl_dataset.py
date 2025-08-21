@@ -21,12 +21,56 @@ from typing import List, Optional, Union
 import datasets
 import numpy as np
 import torch
+from PIL import Image
 from omegaconf import DictConfig, ListConfig
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizer, ProcessorMixin
 
+from io import BytesIO
 import verl.utils.torch_functional as verl_F
 from verl.utils.model import compute_position_id_with_mask
+from qwen_vl_utils import fetch_image
+
+
+def resize_image_long_side(image_path, target_size=(768, 768)):
+    # Resize image if its long side is greater than target size
+    if isinstance(image_path, str) and os.path.isfile(image_path):
+        image = Image.open(image_path)
+    elif isinstance(image_path, Image.Image):
+        image = image_path
+    elif isinstance(image_path, np.ndarray):
+        image = Image.fromarray(image_path)
+    else:
+        raise ValueError("Input must be a file path, PIL Image, or numpy array.")
+    width, height = image.size
+    if max(width, height) > max(target_size):
+        if width > height:
+            new_width = target_size[0]
+            new_height = int((target_size[0] / width) * height)
+        else:
+            new_height = target_size[1]
+            new_width = int((target_size[1] / height) * width)
+        image = image.resize((new_width, new_height), Image.LANCZOS)
+    else:
+        new_width, new_height = width, height
+    return image
+
+
+def process_image(image: Union[dict, Image.Image]) -> Image.Image:
+    # if isinstance(image, dict) and 'bytes' in image.keys():
+    #     image_object = Image.open(BytesIO(image['bytes']))
+
+    if isinstance(image, Image.Image):
+        image = resize_image_long_side(image)
+        return image.convert("RGB")
+
+    if "bytes" in image:
+        assert "image" not in image, "Cannot have both `bytes` and `image`"
+        image_obj = Image.open(BytesIO(image["bytes"]))
+        image_obj = resize_image_long_side(image_obj)
+        image["image"] = image_obj.convert("RGB")
+
+    return fetch_image(image)
 
 
 def collate_fn(data_list: list[dict]) -> dict:
@@ -156,10 +200,11 @@ class RLHFDataset(Dataset):
         """
         row_dict: dict = self.dataframe[item]
         messages = self._build_messages(row_dict)
+        # print(messages)
         model_inputs = {}
 
         if self.processor is not None:
-            from verl.utils.dataset.vision_utils import process_image, process_raw_image, process_video
+            from verl.utils.dataset.vision_utils import process_raw_image, process_video
 
             raw_prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
             multi_modal_data = {}
@@ -177,7 +222,15 @@ class RLHFDataset(Dataset):
                 videos = [process_video(video) for video in row_dict.pop(self.video_key)]
                 multi_modal_data["video"] = [video.numpy() for video in videos]
 
-            model_inputs = self.processor(text=[raw_prompt], images=images, videos=videos, return_tensors="pt")
+            # print(raw_prompt)
+            # print(len(images), images[0].size if images else None)
+            try:
+                model_inputs = self.processor(text=[raw_prompt], images=images, videos=videos, return_tensors="pt")
+            except Exception as e:
+                print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                print(raw_prompt)
+                print(messages)
+                raise e
 
             input_ids = model_inputs.pop("input_ids")
             attention_mask = model_inputs.pop("attention_mask")
@@ -198,6 +251,8 @@ class RLHFDataset(Dataset):
             model_inputs = self.tokenizer(raw_prompt, return_tensors="pt", add_special_tokens=False)
             input_ids = model_inputs.pop("input_ids")
             attention_mask = model_inputs.pop("attention_mask")
+
+        # print(input_ids.shape, attention_mask.shape)
 
         input_ids, attention_mask = verl_F.postprocess_data(
             input_ids=input_ids,
