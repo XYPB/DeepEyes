@@ -81,6 +81,8 @@ def extract_qa(conversations: List[Dict[str, Any]]) -> Tuple[str, str]:
         q = conversations[0].get("value", "")
     if a is None and len(conversations) >= 2:
         a = conversations[1].get("value", "")
+    if "<image>" in q:
+        q = q.replace("<image>", "").strip()
     return q or "", a or ""
 
 
