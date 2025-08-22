@@ -245,6 +245,7 @@ def compute_score(predict_str: str, ground_truth: str, extra_info=None) -> float
     if count_answer_1 != count_answer_2:
         is_format_error = True
 
+    # Use the final answer section in the predict_str
     answer_text = predict_str.split("<answer>")[-1].split("</answer>")[0].strip()
 
     # pattern = re.compile(r'<\|im_start\|>assistant(.*?)$', re.DOTALL)  # 匹配最后一个 target 后的所有内容
