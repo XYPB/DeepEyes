@@ -71,7 +71,7 @@ def get_chat_template():
     chat_template = """
 Below are two answers to a question. Question is [Question], [Standard Answer] is the standard answer to the question, and [Model_answer] is the answer extracted from a model's output to this question.  Determine whether these two answers are consistent.
 Note that [Model Answer] is consistent with [Standard Answer] whenever they are essentially the same. If the meaning is expressed in the same way, it is considered consistent, for example, 'pink' and 'it is pink'.
-If they are consistent, Judement is 1; if they are different, Judement is 0. Just output Judement and don't output anything else.\n\n
+If they are consistent, Judgement is 1; if they are different, Judgement is 0. Just output Judgement and don't output anything else.\n\n
 """
     return chat_template
 
@@ -272,7 +272,7 @@ def compute_score(predict_str: str, ground_truth: str, extra_info=None) -> float
         temperature=0.3,
     )
     response = chat_response.choices[0].message.content.strip()
-    # print(response)
+    # print('[DEBUG Scoring Judger Response]', response)
     if 'Judgement:' in response:
         response = response.split('Judgement:')[-1].strip()
         if '1' in response:
