@@ -5,6 +5,20 @@ We provide a evaluation demo for assess your model on V* benchmark with the bbox
 ## Evaluating Model
 You can use the `eval_vstar.py` to evalate the model with the auto bbox processing. It is worth noting that we firstly deploy model using VLLM. If you want to use transformers to implement your model, you should modify the code and the evaluation process will be slow.
 
+```
+export CUDA_VISIBLE_DEVICES=3; vllm serve models/DeepEyes-7B \
+    --port 8004 \
+    --gpu-memory-utilization 0.7 \
+    --dtype bfloat16 \
+    --limit-mm-per-prompt "image=8" \
+    --max-model-len 32768 \
+    --tensor-parallel-size 1 \
+    --no-enable-prefix-caching \
+    --served-model-name "deepeyes" \
+    --trust-remote-code \
+    --disable-log-requests
+```
+
 Here is a sample of the evaluation command：
 ```
 python eval_vstar.py \

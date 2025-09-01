@@ -11,14 +11,15 @@ from io import BytesIO
 from PIL import Image
 import base64
 import io
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
+from azure.identity import DefaultAzureCredential, AzureCliCredential, get_bearer_token_provider
 import requests
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', type=str, default='qwen', help='Model name for result save')
 parser.add_argument('--api_key', type=str, default='EMPTY', help='API key')
-parser.add_argument('--api_url', type=str, default='http://10.39.19.140:8000/v1', help='API URL')
+parser.add_argument('--api_url', type=str, default='http://localhost:8001/v1', help='API URL')
 parser.add_argument('--vstar_bench_path', type=str, default=None, help='Path to the V* benchmark')
 parser.add_argument('--save_path', type=str, default=None, help='Path to save the results')
 parser.add_argument('--eval_model_name', type=str, default=None, help='Model name for evaluation')
@@ -33,6 +34,8 @@ client = OpenAI(
     api_key=openai_api_key,
     base_url=openai_api_base,
 )
+
+
 if args.eval_model_name is None:
     response = requests.get(f"{openai_api_base}/models")
     models = response.json()
