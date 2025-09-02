@@ -116,7 +116,7 @@ def smart_resize(
 def process(data_arg):
     image_path, question, gt = data_arg
     prompt = instruction_prompt_before.format(question=question)
-    pil_img = Image.open(image_path)
+    pil_img = Image.open(image_path).convert('RGB')
     base64_image = encode_image_to_base64(image_path)
 
     messages = [
@@ -271,7 +271,10 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=args.num_workers)
     data_arg = []
     for item in data:
-        image_path = os.path.join(args.image_root, item['image'])
+        if isinstance(item['image'], list):
+            image_path = os.path.join(args.image_root, item['image'][0])
+        else:
+            image_path = os.path.join(args.image_root, item['image'])
         question = item['conversations'][0]['value'].replace('<image>', '').strip()
         gt = item['conversations'][1]['value'].strip()
         data_arg.append((image_path, question, gt))

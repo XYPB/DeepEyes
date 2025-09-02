@@ -4,3 +4,5 @@ python eval/eval_medvqa.py --save_path outputs/ --num_workers 4 --eval_jsonl /ho
 python eval/eval_medvqa.py --save_path outputs/ --num_workers 4 --eval_jsonl /data/yuexi/datasets/SLAKE/slake_test.jsonl
 python eval/eval_medvqa.py --save_path outputs/ --num_workers 4 --eval_jsonl /data/yuexi/datasets/ImageCLEF-2019/VQAMed2019Test/VQAMed2019_Test_Questions_w_Ref_Answers.jsonl
 python eval/eval_medvqa.py --save_path outputs/ --num_workers 4 --eval_jsonl /data/yuexi/datasets/VQA_RAD/vqa_rad_test.jsonl
+
+python eval/eval_medvqa.py --save_path outputs/ --num_workers 8 --eval_jsonl /data/yuexi/datasets/pvqa/qas/pvqa_test_vqa_adapted.jsonl --image_root /home/yuexi/projects/DeepEyes
