@@ -34,7 +34,7 @@ client = OpenAI(
 )
 
 
-model_name = "deepeyes"
+model_name = args.model_name
 save_path = os.path.join(args.save_path, model_name)
 eval_model_name = "deepeyes"
 os.makedirs(save_path, exist_ok=True)
@@ -244,6 +244,7 @@ def process(data_arg):
         output_text = response_message.split('<answer>')[1].split('</answer>')[0].strip()
     else:
         output_text = response_message
+    # print(output_text, "|", gt)
     
     save_info = {}
     save_info['image'] = image_path
@@ -271,7 +272,7 @@ if __name__ == "__main__":
     data_arg = []
     for item in data:
         image_path = os.path.join(args.image_root, item['image'])
-        question = item['conversations'][0]['value'].replace('<image>').strip()
+        question = item['conversations'][0]['value'].replace('<image>', '').strip()
         gt = item['conversations'][1]['value'].strip()
         data_arg.append((image_path, question, gt))
     
@@ -280,7 +281,7 @@ if __name__ == "__main__":
             if result is not None:
                 save_json.append(result)
                 pbar.update(1)
-                
+
     pool.close()
     pool.join()
     
